@@ -1,1 +1,409 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Attendance Tracker</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f5fb;color:#26334b}
+header{background:linear-gradient(120deg,#263b80,#6077e8);color:white;padding:22px 5%;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{margin:0 0 5px}
+header p{margin:0;opacity:.85}
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 15px;font-weight:bold}
+header button{background:white;color:#304b9c}
+main{max-width:1100px;margin:24px auto;padding:0 15px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat,.panel{background:white;padding:17px;border-radius:13px;box-shadow:0 3px 14px #26385b12}
+.stat span{font-size:12px;color:#788197}
+.stat strong{display:block;font-size:23px;margin-top:8px;color:#304b9c}
+.monthbar{display:flex;justify-content:space-between;align-items:center}
+.monthbar button{background:#edf0ff;color:#304b9c}
+.weekdays,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.weekdays span{text-align:center;padding:12px 0;color:#778198;font-size:12px}
+.day{min-height:72px;background:white;border:1px solid #e6eaf2;text-align:left;padding:6px;color:#26334b}
+.day.selected{outline:2px solid #526de0}
+.day.empty{background:#f8f9fc}
+.day-number{display:block;font-weight:bold;margin-bottom:6px}
+.day-status{font-size:10px;display:block;overflow-wrap:anywhere}
+.present{background:#e0f7e9}
+.half-day{background:#fff0d8}
+.paid-leave,.holiday-paid-leave{background:#e8e4ff}
+.unpaid-leave-lwp{background:#ffe4e4}
+.comp-off-leave{background:#dff6f7}
+.week-off{background:#eef0f4}
+.wfh{background:#e0efff}
+.on-duty{background:#fce8f3}
+.panel{margin-top:18px}
+label{display:block;font-size:13px;font-weight:bold;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #dce2ee;border-radius:8px;font:inherit;background:white}
+textarea{min-height:65px}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.primary{background:#304b9c;color:white;margin-top:15px}
+.secondary{background:#eef0f5;color:#45516a;margin-top:15px}
+.info{font-size:13px;color:#278254}
+.muted{font-size:12px;color:#778198}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:520px){
+ header{padding:18px 12px}
+ header h1{font-size:21px}
+ .day{min-height:60px;padding:4px}
+ .day-status{font-size:9px}
+ .times{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<header>
+ <div>
+  <h1>My Attendance</h1>
+  <p>August – December 2026</p>
+ </div>
+ <button id="export">Backup JSON</button>
+</header>
+
+<main>
+ <section class="stats">
+  <div class="stat"><span>Monthly Salary</span><strong>₹15,000</strong></div>
+  <div class="stat"><span>Present Days</span><strong id="present">0</strong></div>
+  <div class="stat"><span>Paid Leave Used</span><strong id="leaves">0 / 2</strong></div>
+  <div class="stat"><span>Comp Off Balance</span><strong id="comp">0</strong></div>
+  <div class="stat"><span>Working Hours</span><strong id="hours">0</strong></div>
+ </section>
+
+ <section class="panel">
+  <div class="monthbar">
+   <button id="prev">❮</button>
+   <h2 id="monthTitle">August 2026</h2>
+   <button id="next">❯</button>
+  </div>
+  <div class="weekdays">
+   <span>Sun</span><span>Mon</span><span>Tue</span>
+   <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div class="calendar" id="calendar"></div>
+ </section>
+
+ <section class="panel">
+  <h2 id="dateTitle">Select a date</h2>
+
+  <label>Attendance Status</label>
+  <select id="status">
+   <option>Present</option>
+   <option>Half Day</option>
+   <option>Paid Leave</option>
+   <option>Unpaid Leave (LWP)</option>
+   <option>Comp Off Leave</option>
+   <option>Week Off</option>
+   <option>Holiday (Paid Leave)</option>
+   <option>WFH</option>
+   <option>On Duty</option>
+  </select>
+
+  <div class="times">
+   <div>
+    <label>Time In</label>
+    <input type="time" id="timeIn">
+   </div>
+   <div>
+    <label>Time Out</label>
+    <input type="time" id="timeOut">
+   </div>
+  </div>
+
+  <label>Notes</label>
+  <textarea id="notes" placeholder="Add your notes here..."></textarea>
+
+  <p id="workHours" class="info">Working hours: 0</p>
+  <p id="message" class="info">Changes save automatically.</p>
+
+  <div class="actions">
+   <button class="primary" id="save">Save Attendance</button>
+   <button class="secondary" id="clear">Clear Date</button>
+   <button class="secondary" id="csv">Export CSV</button>
+  </div>
+ </section>
+
+ <section class="panel">
+  <h3>Attendance Rules</h3>
+  <p>Monthly salary: ₹15,000. Salary deductions: None.</p>
+  <p>Paid leave allowance: 2 days per month. Duty hours: 9 hours.</p>
+  <p>Default weekly offs: Sunday, Thursday, and 1st, 3rd and 5th Saturdays.</p>
+  <p class="muted">You can manually edit any date. Change the default weekly-off status if your actual schedule differs.</p>
+  <p class="muted">Records are stored in this browser on this device. Export backups regularly.</p>
+ </section>
+</main>
+
+<script>
+const DB_NAME="MyAttendanceDB";
+const STORE="attendance";
+const START="2026-08-01";
+const END="2026-12-31";
+
+let db;
+let records={};
+let selected="2026-08-01";
+let month=new Date(2026,7,1);
+let saveTimer;
+
+const $=id=>document.getElementById(id);
+
+function key(d){
+ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=()=>{
+   if(!req.result.objectStoreNames.contains(STORE))
+    req.result.createObjectStore(STORE,{keyPath:"date"});
+  };
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error);
+ });
+}
+
+function transaction(mode,action){
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(STORE,mode);
+  const store=tx.objectStore(STORE);
+  let req=action(store);
+  if(req){
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error);
+  }else{
+   tx.oncomplete=resolve;
+   tx.onerror=()=>reject(tx.error);
+  }
+ });
+}
+
+function getAll(){
+ return transaction("readonly",s=>s.getAll());
+}
+
+function put(record){
+ return transaction("readwrite",s=>s.put(record));
+}
+
+function remove(date){
+ return transaction("readwrite",s=>s.delete(date));
+}
+
+function defaultStatus(d){
+ const day=d.getDay();
+ const saturday=Math.ceil(d.getDate()/7);
+ if(day===0||day===4||(day===6&&[1,3,5].includes(saturday)))
+  return "Week Off";
+ return "";
+}
+
+function getHours(a,b){
+ if(!a||!b)return 0;
+ const [h1,m1]=a.split(":").map(Number);
+ const [h2,m2]=b.split(":").map(Number);
+ let mins=h2*60+m2-(h1*60+m1);
+ if(mins<0)mins+=1440;
+ return Math.round(mins/60*100)/100;
+}
+
+function cssName(s){
+ return s.toLowerCase().replaceAll(" ","-").replace(/[()]/g,"");
+}
+
+function render(){
+ const y=month.getFullYear(),m=month.getMonth();
+ $("monthTitle").textContent=month.toLocaleString("en-IN",{month:"long",year:"numeric"});
+ const first=new Date(y,m,1).getDay();
+ const total=new Date(y,m+1,0).getDate();
+ const cal=$("calendar");
+ cal.innerHTML="";
+
+ for(let i=0;i<first;i++){
+  const e=document.createElement("div");
+  e.className="day empty";
+  cal.appendChild(e);
+ }
+
+ for(let n=1;n<=total;n++){
+  const d=new Date(y,m,n);
+  const k=key(d);
+  const r=records[k];
+  const status=r?.status||defaultStatus(d);
+  const b=document.createElement("button");
+  b.className="day";
+  if(k===selected)b.classList.add("selected");
+  if(status)b.classList.add(cssName(status));
+
+  const num=document.createElement("span");
+  num.className="day-number";
+  num.textContent=n;
+
+  const st=document.createElement("span");
+  st.className="day-status";
+  st.textContent=status;
+
+  b.append(num,st);
+  b.onclick=()=>selectDate(k);
+  cal.appendChild(b);
+ }
+ summary();
+}
+
+function selectDate(k){
+ selected=k;
+ const r=records[k]||{};
+ const d=new Date(k+"T00:00:00");
+
+ $("dateTitle").textContent=d.toLocaleDateString("en-IN",{
+  weekday:"long",day:"numeric",month:"long",year:"numeric"
+ });
+ $("status").value=r.status||defaultStatus(d)||"Present";
+ $("timeIn").value=r.timeIn||"";
+ $("timeOut").value=r.timeOut||"";
+ $("notes").value=r.notes||"";
+ calculate();
+ render();
+}
+
+function calculate(){
+ const h=getHours($("timeIn").value,$("timeOut").value);
+ $("workHours").textContent="Working hours: "+h.toFixed(2)+
+  " / 9 hours duty";
+ return h;
+}
+
+async function save(){
+ const record={
+  date:selected,
+  status:$("status").value,
+  timeIn:$("timeIn").value,
+  timeOut:$("timeOut").value,
+  notes:$("notes").value,
+  updatedAt:new Date().toISOString()
+ };
+
+ try{
+  await put(record);
+  records[selected]=record;
+  $("message").textContent="✓ Automatically saved on this device";
+  render();
+ }catch(e){
+  $("message").textContent="Save failed. Please try again.";
+  console.error(e);
+ }
+}
+
+function autoSave(){
+ clearTimeout(saveTimer);
+ $("message").textContent="Saving...";
+ saveTimer=setTimeout(save,350);
+}
+
+function summary(){
+ const prefix=key(month).slice(0,7);
+ const list=Object.values(records).filter(r=>r.date.startsWith(prefix));
+
+ $("present").textContent=list.filter(r=>
+  ["Present","WFH","On Duty"].includes(r.status)).length;
+
+ $("leaves").textContent=list.filter(r=>
+  ["Paid Leave","Holiday (Paid Leave)"].includes(r.status)).length+" / 2";
+
+ const total=list.reduce((s,r)=>s+getHours(r.timeIn,r.timeOut),0);
+ $("hours").textContent=total.toFixed(1);
+
+ let earned=0,used=0;
+ for(const [k,r] of Object.entries(records)){
+  const d=new Date(k+"T00:00:00");
+  if(defaultStatus(d)==="Week Off"&&
+    ["Present","WFH","On Duty"].includes(r.status))earned++;
+  if(r.status==="Comp Off Leave")used++;
+ }
+ $("comp").textContent=earned-used;
+}
+
+function backup(){
+ const data={
+  salary:15000,
+  paidLeavesPerMonth:2,
+  dutyHours:9,
+  exportedAt:new Date().toISOString(),
+  records:Object.values(records)
+ };
+ download(JSON.stringify(data,null,2),"attendance-backup.json","application/json");
+}
+
+function exportCSV(){
+ const rows=[["Date","Status","Time In","Time Out","Hours","Notes"]];
+ Object.values(records).sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
+  rows.push([r.date,r.status,r.timeIn,r.timeOut,getHours(r.timeIn,r.timeOut),r.notes]);
+ });
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\n");
+ download(csv,"attendance.csv","text/csv");
+}
+
+function download(content,name,type){
+ const blob=new Blob([content],{type});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download=name;a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function clearDate(){
+ if(!confirm("Clear attendance for this date?"))return;
+ await remove(selected);
+ delete records[selected];
+ $("message").textContent="Date cleared.";
+ selectDate(selected);
+}
+
+async function init(){
+ try{
+  db=await openDB();
+  const all=await getAll();
+  all.forEach(r=>{
+   if(r.date>=START&&r.date<=END)records[r.date]=r;
+  });
+
+  $("prev").onclick=()=>{
+   const d=new Date(month.getFullYear(),month.getMonth()-1,1);
+   if(key(d)>=START){month=d;render();}
+  };
+
+  $("next").onclick=()=>{
+   const d=new Date(month.getFullYear(),month.getMonth()+1,1);
+   if(key(d)<=END){month=d;render();}
+  };
+
+  $("save").onclick=save;
+  $("clear").onclick=clearDate;
+  $("export").onclick=backup;
+  $("csv").onclick=exportCSV;
+
+  ["status","timeIn","timeOut","notes"].forEach(id=>{
+   $(id).addEventListener("input",()=>{
+    calculate();
+    autoSave();
+   });
+   $(id).addEventListener("change",autoSave);
+  });
+
+  render();
+  selectDate(selected);
+ }catch(error){
+  console.error(error);
+  alert("Browser storage is unavailable. Please open this file in an updated Chrome or Edge browser.");
+ }
+}
+
+init();
+</script>
+</body>
+  </html>
+
