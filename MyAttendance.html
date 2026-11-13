@@ -4,406 +4,877 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Attendance Tracker</title>
+<title>Employee Attendance System</title>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f2f5fb;color:#26334b}
-header{background:linear-gradient(120deg,#263b80,#6077e8);color:white;padding:22px 5%;display:flex;justify-content:space-between;align-items:center;gap:10px}
-header h1{margin:0 0 5px}
-header p{margin:0;opacity:.85}
-button{cursor:pointer;border:0;border-radius:8px;padding:11px 15px;font-weight:bold}
-header button{background:white;color:#304b9c}
-main{max-width:1100px;margin:24px auto;padding:0 15px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
-.stat,.panel{background:white;padding:17px;border-radius:13px;box-shadow:0 3px 14px #26385b12}
-.stat span{font-size:12px;color:#788197}
-.stat strong{display:block;font-size:23px;margin-top:8px;color:#304b9c}
-.monthbar{display:flex;justify-content:space-between;align-items:center}
-.monthbar button{background:#edf0ff;color:#304b9c}
-.weekdays,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-.weekdays span{text-align:center;padding:12px 0;color:#778198;font-size:12px}
-.day{min-height:72px;background:white;border:1px solid #e6eaf2;text-align:left;padding:6px;color:#26334b}
-.day.selected{outline:2px solid #526de0}
-.day.empty{background:#f8f9fc}
-.day-number{display:block;font-weight:bold;margin-bottom:6px}
-.day-status{font-size:10px;display:block;overflow-wrap:anywhere}
-.present{background:#e0f7e9}
-.half-day{background:#fff0d8}
-.paid-leave,.holiday-paid-leave{background:#e8e4ff}
-.unpaid-leave-lwp{background:#ffe4e4}
-.comp-off-leave{background:#dff6f7}
-.week-off{background:#eef0f4}
-.wfh{background:#e0efff}
-.on-duty{background:#fce8f3}
-.panel{margin-top:18px}
-label{display:block;font-size:13px;font-weight:bold;margin:14px 0 6px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #dce2ee;border-radius:8px;font:inherit;background:white}
-textarea{min-height:65px}
-.times{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.primary{background:#304b9c;color:white;margin-top:15px}
-.secondary{background:#eef0f5;color:#45516a;margin-top:15px}
-.info{font-size:13px;color:#278254}
-.muted{font-size:12px;color:#778198}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:520px){
- header{padding:18px 12px}
- header h1{font-size:21px}
- .day{min-height:60px;padding:4px}
- .day-status{font-size:9px}
- .times{grid-template-columns:1fr}
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#1e293b}
+header{background:#172554;color:white;text-align:center;padding:22px}
+header h2{margin:0 0 8px}
+nav{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;background:white;padding:15px}
+button{background:#2563eb;color:white;border:0;padding:11px 16px;border-radius:7px;cursor:pointer;font-weight:bold}
+button:hover{opacity:.85}
+.gray{background:#64748b}
+.red{background:#dc2626}
+main{max-width:1250px;margin:20px auto;padding:12px}
+.panel{background:white;padding:20px;border-radius:12px;margin-bottom:18px;box-shadow:0 2px 10px #0000000b}
+h3{color:#172554;margin-top:0}
+.row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.field{flex:1;min-width:150px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:7px;background:white}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.card{background:white;padding:16px;border-radius:10px;border-left:4px solid #2563eb}
+.card small{color:#64748b}
+.card strong{display:block;font-size:25px;margin-top:8px}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:750px}
+th,td{padding:11px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}
+th{background:#eff6ff}
+.badge{padding:5px 8px;border-radius:5px;font-size:12px;font-weight:bold;white-space:nowrap}
+.Present{background:#dcfce7;color:#166534}
+.Absent{background:#fee2e2;color:#991b1b}
+.Half-day{background:#fef3c7;color:#92400e}
+.Comp-off{background:#ede9fe;color:#5b21b6}
+.WOFF{background:#dbeafe;color:#1e40af}
+.WFH{background:#cffafe;color:#155e75}
+.Paid-Holiday{background:#fce7f3;color:#9d174d}
+.Paid-Leave{background:#ffedd5;color:#9a3412}
+.LWP{background:#f1f5f9;color:#334155}
+.Pending{background:#e2e8f0;color:#475569}
+.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:20;padding:15px}
+.modal-content{background:white;padding:24px;border-radius:13px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
+.modal-content h3{margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions button{flex:1}
+.note{background:#eff6ff;border-left:4px solid #2563eb;padding:12px;font-size:13px;line-height:1.6;margin:12px 0}
+.report-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.small-btn{padding:6px 9px;font-size:12px}
+footer{text-align:center;color:#64748b;padding:20px;font-size:12px}
+@media(max-width:600px){main{padding:7px}.panel{padding:14px}}
+@media print{nav,button,.no-print{display:none!important}body{background:white}.panel,.card{box-shadow:none}}
 </style>
 </head>
 
 <body>
+
 <header>
- <div>
-  <h1>My Attendance</h1>
-  <p>August – December 2026</p>
- </div>
- <button id="export">Backup JSON</button>
+<h2>📅 Employee Attendance Management</h2>
+<div>Yearly Attendance & Leave Tracker</div>
 </header>
 
+<nav>
+<button onclick="showPage('attendance')">Attendance Entry</button>
+<button onclick="showPage('reports')">Monthly Report</button>
+<button onclick="showPage('yearly')">Yearly Report</button>
+<button onclick="openEntry()">+ Add Attendance</button>
+</nav>
+
 <main>
- <section class="stats">
-  <div class="stat"><span>Monthly Salary</span><strong>₹15,000</strong></div>
-  <div class="stat"><span>Present Days</span><strong id="present">0</strong></div>
-  <div class="stat"><span>Paid Leave Used</span><strong id="leaves">0 / 2</strong></div>
-  <div class="stat"><span>Comp Off Balance</span><strong id="comp">0</strong></div>
-  <div class="stat"><span>Working Hours</span><strong id="hours">0</strong></div>
- </section>
 
- <section class="panel">
-  <div class="monthbar">
-   <button id="prev">❮</button>
-   <h2 id="monthTitle">August 2026</h2>
-   <button id="next">❯</button>
-  </div>
-  <div class="weekdays">
-   <span>Sun</span><span>Mon</span><span>Tue</span>
-   <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-  </div>
-  <div class="calendar" id="calendar"></div>
- </section>
+<!-- ATTENDANCE DASHBOARD -->
+<section id="attendancePage">
 
- <section class="panel">
-  <h2 id="dateTitle">Select a date</h2>
+<div class="panel">
+<h3>Attendance Dashboard</h3>
+<div class="row">
+<div class="field">
+<label>Month</label>
+<select id="dashMonth" onchange="renderDashboard()"></select>
+</div>
+<div class="field">
+<label>Year</label>
+<select id="dashYear" onchange="renderDashboard()"></select>
+</div>
+<button onclick="openEntry()">Add Attendance</button>
+</div>
+</div>
 
-  <label>Attendance Status</label>
-  <select id="status">
-   <option>Present</option>
-   <option>Half Day</option>
-   <option>Paid Leave</option>
-   <option>Unpaid Leave (LWP)</option>
-   <option>Comp Off Leave</option>
-   <option>Week Off</option>
-   <option>Holiday (Paid Leave)</option>
-   <option>WFH</option>
-   <option>On Duty</option>
-  </select>
+<div class="cards" id="dashboardCards"></div>
 
-  <div class="times">
-   <div>
-    <label>Time In</label>
-    <input type="time" id="timeIn">
-   </div>
-   <div>
-    <label>Time Out</label>
-    <input type="time" id="timeOut">
-   </div>
-  </div>
+<div class="panel">
+<div class="report-title">
+<h3>Daily Attendance Details</h3>
+<button class="gray" onclick="exportCSV('daily')">Download CSV</button>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Day</th><th>Status</th>
+<th>Comp-off Source</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="dailyTable"></tbody>
+</table>
+</div>
+</div>
+</section>
 
-  <label>Notes</label>
-  <textarea id="notes" placeholder="Add your notes here..."></textarea>
+<!-- MONTHLY REPORT -->
+<section id="reportsPage" class="hidden">
 
-  <p id="workHours" class="info">Working hours: 0</p>
-  <p id="message" class="info">Changes save automatically.</p>
+<div class="panel">
+<h3>Monthly Attendance Report</h3>
+<div class="row">
+<div class="field">
+<label>Select Month</label>
+<select id="reportMonth" onchange="renderMonthlyReport()"></select>
+</div>
+<div class="field">
+<label>Select Year</label>
+<select id="reportYear" onchange="renderMonthlyReport()"></select>
+</div>
+<button class="gray" onclick="window.print()">Print</button>
+<button onclick="exportCSV('monthly')">Export CSV</button>
+</div>
+</div>
 
-  <div class="actions">
-   <button class="primary" id="save">Save Attendance</button>
-   <button class="secondary" id="clear">Clear Date</button>
-   <button class="secondary" id="csv">Export CSV</button>
-  </div>
- </section>
+<div class="cards" id="monthlyCards"></div>
 
- <section class="panel">
-  <h3>Attendance Rules</h3>
-  <p>Monthly salary: ₹15,000. Salary deductions: None.</p>
-  <p>Paid leave allowance: 2 days per month. Duty hours: 9 hours.</p>
-  <p>Default weekly offs: Sunday, Thursday, and 1st, 3rd and 5th Saturdays.</p>
-  <p class="muted">You can manually edit any date. Change the default weekly-off status if your actual schedule differs.</p>
-  <p class="muted">Records are stored in this browser on this device. Export backups regularly.</p>
- </section>
+<div class="panel">
+<h3>Paid Leave Balance</h3>
+<div id="leaveBalance"></div>
+</div>
+
+<div class="panel">
+<h3>Comp-off Balance</h3>
+<div id="compBalance"></div>
+</div>
+
+<div class="panel">
+<h3>Monthly Detailed Attendance</h3>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Day</th><th>Status</th><th>Comp-off Source</th>
+</tr>
+</thead>
+<tbody id="monthlyTable"></tbody>
+</table>
+</div>
+</div>
+
+</section>
+
+<!-- YEARLY REPORT -->
+<section id="yearlyPage" class="hidden">
+
+<div class="panel">
+<h3>Yearly Attendance Report</h3>
+<div class="row">
+<div class="field">
+<label>Select Year</label>
+<select id="yearlyYear" onchange="renderYearlyReport()"></select>
+</div>
+<button onclick="exportCSV('yearly')">Download Yearly CSV</button>
+<button class="gray" onclick="window.print()">Print</button>
+</div>
+</div>
+
+<div class="cards" id="yearlyCards"></div>
+
+<div class="panel">
+<h3>12 Months Attendance Summary</h3>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Month</th><th>Present</th><th>Absent</th>
+<th>Half Day</th><th>Paid Leave</th><th>Comp-off</th>
+<th>Weekly Off</th><th>WFH</th><th>Holiday</th><th>LWP</th>
+</tr>
+</thead>
+<tbody id="yearlyTable"></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel">
+<h3>Year-end Paid Leave Balance</h3>
+<div id="yearEndBalance"></div>
+</div>
+
+<div class="panel">
+<h3>Year-end Comp-off Balance</h3>
+<div id="yearEndComp"></div>
+</div>
+
+</section>
 </main>
 
+<footer>
+Your attendance is stored in this browser. Download regular CSV backups.
+</footer>
+
+<!-- ATTENDANCE POPUP -->
+<div class="modal hidden" id="entryModal">
+<div class="modal-content">
+
+<h3>📝 Attendance Entry</h3>
+
+<div class="field">
+<label>Select Month</label>
+<select id="entryMonth" onchange="updateEntryDate()"></select>
+</div><br>
+
+<div class="field">
+<label>Select Year</label>
+<select id="entryYear" onchange="updateEntryDate()"></select>
+</div><br>
+
+<div class="field">
+<label>Select Date</label>
+<input type="date" id="entryDate" onchange="checkOffDay()">
+</div>
+
+<div class="note" id="offDayMessage">
+Select a date.
+</div>
+
+<div class="field">
+<label>Select Attendance Status</label>
+<select id="entryStatus" onchange="checkStatus()">
+<option value="Present">Present</option>
+<option value="Absent">Absent</option>
+<option value="Half-day">Half-day</option>
+<option value="Comp-off">Comp-off Leave</option>
+<option value="WOFF">Weekly Off</option>
+<option value="WFH">Work From Home</option>
+<option value="Paid Holiday">Paid Holiday</option>
+<option value="Paid Leave">Paid Leave</option>
+<option value="LWP">Leave Without Pay</option>
+</select>
+</div>
+
+<div id="compOffBox" class="hidden">
+<br>
+<div class="field">
+<label>Select Previous Weekly-Off Working Date</label>
+<select id="compOffSource">
+<option value="">Select source date</option>
+</select>
+</div>
+<div class="note">
+Select a previous Sunday or 1st, 3rd or 5th Saturday on which you worked and were marked Present.
+Each worked weekly-off date can be used only once.
+</div>
+</div>
+
+<div class="modal-actions">
+<button onclick="saveAttendance()">Save Attendance</button>
+<button class="gray" onclick="closeEntry()">Cancel</button>
+</div>
+
+</div>
+</div>
+
 <script>
-const DB_NAME="MyAttendanceDB";
-const STORE="attendance";
-const START="2026-08-01";
-const END="2026-12-31";
 
-let db;
-let records={};
-let selected="2026-08-01";
-let month=new Date(2026,7,1);
-let saveTimer;
+// =============================
+// BASIC SETTINGS
+// =============================
 
-const $=id=>document.getElementById(id);
+const STORAGE_KEY="employee_attendance_v2";
 
-function key(d){
- return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const MONTHS=[
+"January","February","March","April","May","June",
+"July","August","September","October","November","December"
+];
+
+const STATUSES=[
+"Present","Absent","Half-day","Comp-off","WOFF",
+"WFH","Paid Holiday","Paid Leave","LWP"
+];
+
+let attendance=loadData();
+let editingDate=null;
+
+function loadData(){
+try{
+return JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
+}catch(e){
+return {};
+}
 }
 
-function openDB(){
- return new Promise((resolve,reject)=>{
-  const req=indexedDB.open(DB_NAME,1);
-  req.onupgradeneeded=()=>{
-   if(!req.result.objectStoreNames.contains(STORE))
-    req.result.createObjectStore(STORE,{keyPath:"date"});
-  };
-  req.onsuccess=()=>resolve(req.result);
-  req.onerror=()=>reject(req.error);
- });
+function saveData(){
+localStorage.setItem(STORAGE_KEY,JSON.stringify(attendance));
 }
 
-function transaction(mode,action){
- return new Promise((resolve,reject)=>{
-  const tx=db.transaction(STORE,mode);
-  const store=tx.objectStore(STORE);
-  let req=action(store);
-  if(req){
-   req.onsuccess=()=>resolve(req.result);
-   req.onerror=()=>reject(req.error);
-  }else{
-   tx.oncomplete=resolve;
-   tx.onerror=()=>reject(tx.error);
-  }
- });
+function pad(n){
+return String(n).padStart(2,"0");
 }
 
-function getAll(){
- return transaction("readonly",s=>s.getAll());
+function dateKey(y,m,d){
+return y+"-"+pad(m+1)+"-"+pad(d);
 }
 
-function put(record){
- return transaction("readwrite",s=>s.put(record));
+function parseDate(key){
+const [y,m,d]=key.split("-").map(Number);
+return new Date(y,m-1,d);
 }
 
-function remove(date){
- return transaction("readwrite",s=>s.delete(date));
+function todayKey(){
+const d=new Date();
+return dateKey(d.getFullYear(),d.getMonth(),d.getDate());
 }
 
-function defaultStatus(d){
- const day=d.getDay();
- const saturday=Math.ceil(d.getDate()/7);
- if(day===0||day===4||(day===6&&[1,3,5].includes(saturday)))
-  return "Week Off";
- return "";
+function monthDays(y,m){
+return new Date(y,m+1,0).getDate();
 }
 
-function getHours(a,b){
- if(!a||!b)return 0;
- const [h1,m1]=a.split(":").map(Number);
- const [h2,m2]=b.split(":").map(Number);
- let mins=h2*60+m2-(h1*60+m1);
- if(mins<0)mins+=1440;
- return Math.round(mins/60*100)/100;
+function dayName(key){
+return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][parseDate(key).getDay()];
 }
 
-function cssName(s){
- return s.toLowerCase().replaceAll(" ","-").replace(/[()]/g,"");
+function isWeeklyOff(key){
+const d=parseDate(key);
+const weekday=d.getDay();
+const occurrence=Math.ceil(d.getDate()/7);
+
+return weekday===0 ||
+(weekday===6 && [1,3,5].includes(occurrence));
 }
 
-function render(){
- const y=month.getFullYear(),m=month.getMonth();
- $("monthTitle").textContent=month.toLocaleString("en-IN",{month:"long",year:"numeric"});
- const first=new Date(y,m,1).getDay();
- const total=new Date(y,m+1,0).getDate();
- const cal=$("calendar");
- cal.innerHTML="";
-
- for(let i=0;i<first;i++){
-  const e=document.createElement("div");
-  e.className="day empty";
-  cal.appendChild(e);
- }
-
- for(let n=1;n<=total;n++){
-  const d=new Date(y,m,n);
-  const k=key(d);
-  const r=records[k];
-  const status=r?.status||defaultStatus(d);
-  const b=document.createElement("button");
-  b.className="day";
-  if(k===selected)b.classList.add("selected");
-  if(status)b.classList.add(cssName(status));
-
-  const num=document.createElement("span");
-  num.className="day-number";
-  num.textContent=n;
-
-  const st=document.createElement("span");
-  st.className="day-status";
-  st.textContent=status;
-
-  b.append(num,st);
-  b.onclick=()=>selectDate(k);
-  cal.appendChild(b);
- }
- summary();
+function getRecord(key){
+return attendance[key]||null;
 }
 
-function selectDate(k){
- selected=k;
- const r=records[k]||{};
- const d=new Date(k+"T00:00:00");
-
- $("dateTitle").textContent=d.toLocaleDateString("en-IN",{
-  weekday:"long",day:"numeric",month:"long",year:"numeric"
- });
- $("status").value=r.status||defaultStatus(d)||"Present";
- $("timeIn").value=r.timeIn||"";
- $("timeOut").value=r.timeOut||"";
- $("notes").value=r.notes||"";
- calculate();
- render();
+function getStatus(key){
+const record=getRecord(key);
+if(record)return record.status;
+return isWeeklyOff(key)?"WOFF":"Pending";
 }
 
-function calculate(){
- const h=getHours($("timeIn").value,$("timeOut").value);
- $("workHours").textContent="Working hours: "+h.toFixed(2)+
-  " / 9 hours duty";
- return h;
+// =============================
+// SELECT BOX INITIALIZATION
+// =============================
+
+function fillSelectors(){
+
+const now=new Date();
+const currentYear=now.getFullYear();
+
+["dashMonth","reportMonth","entryMonth"].forEach(id=>{
+const el=document.getElementById(id);
+el.innerHTML=MONTHS.map((m,i)=>
+`<option value="${i}">${m}</option>`
+).join("");
+el.value=now.getMonth();
+});
+
+["dashYear","reportYear","entryYear","yearlyYear"].forEach(id=>{
+const el=document.getElementById(id);
+let html="";
+for(let y=currentYear-5;y<=currentYear+5;y++){
+html+=`<option value="${y}">${y}</option>`;
+}
+el.innerHTML=html;
+el.value=currentYear;
+});
+
 }
 
-async function save(){
- const record={
-  date:selected,
-  status:$("status").value,
-  timeIn:$("timeIn").value,
-  timeOut:$("timeOut").value,
-  notes:$("notes").value,
-  updatedAt:new Date().toISOString()
- };
+// =============================
+// PAGE NAVIGATION
+// =============================
 
- try{
-  await put(record);
-  records[selected]=record;
-  $("message").textContent="✓ Automatically saved on this device";
-  render();
- }catch(e){
-  $("message").textContent="Save failed. Please try again.";
-  console.error(e);
- }
+function showPage(page){
+
+["attendance","reports","yearly"].forEach(p=>{
+document.getElementById(p+"Page").classList.add("hidden");
+});
+
+document.getElementById(page+"Page").classList.remove("hidden");
+
+if(page==="attendance")renderDashboard();
+if(page==="reports")renderMonthlyReport();
+if(page==="yearly")renderYearlyReport();
+
 }
 
-function autoSave(){
- clearTimeout(saveTimer);
- $("message").textContent="Saving...";
- saveTimer=setTimeout(save,350);
+// =============================
+// ATTENDANCE POPUP
+// =============================
+
+function openEntry(key=null){
+
+editingDate=key;
+
+const selected=key?parseDate(key):new Date();
+
+document.getElementById("entryYear").value=selected.getFullYear();
+document.getElementById("entryMonth").value=selected.getMonth();
+document.getElementById("entryDate").value=key||todayKey();
+
+if(key&&attendance[key]){
+document.getElementById("entryStatus").value=attendance[key].status;
+}else{
+document.getElementById("entryStatus").value=
+isWeeklyOff(document.getElementById("entryDate").value)
+?"WOFF":"Present";
 }
 
-function summary(){
- const prefix=key(month).slice(0,7);
- const list=Object.values(records).filter(r=>r.date.startsWith(prefix));
+document.getElementById("entryModal").classList.remove("hidden");
 
- $("present").textContent=list.filter(r=>
-  ["Present","WFH","On Duty"].includes(r.status)).length;
+checkOffDay();
+checkStatus();
 
- $("leaves").textContent=list.filter(r=>
-  ["Paid Leave","Holiday (Paid Leave)"].includes(r.status)).length+" / 2";
-
- const total=list.reduce((s,r)=>s+getHours(r.timeIn,r.timeOut),0);
- $("hours").textContent=total.toFixed(1);
-
- let earned=0,used=0;
- for(const [k,r] of Object.entries(records)){
-  const d=new Date(k+"T00:00:00");
-  if(defaultStatus(d)==="Week Off"&&
-    ["Present","WFH","On Duty"].includes(r.status))earned++;
-  if(r.status==="Comp Off Leave")used++;
- }
- $("comp").textContent=earned-used;
 }
 
-function backup(){
- const data={
-  salary:15000,
-  paidLeavesPerMonth:2,
-  dutyHours:9,
-  exportedAt:new Date().toISOString(),
-  records:Object.values(records)
- };
- download(JSON.stringify(data,null,2),"attendance-backup.json","application/json");
+function closeEntry(){
+document.getElementById("entryModal").classList.add("hidden");
+editingDate=null;
 }
 
-function exportCSV(){
- const rows=[["Date","Status","Time In","Time Out","Hours","Notes"]];
- Object.values(records).sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
-  rows.push([r.date,r.status,r.timeIn,r.timeOut,getHours(r.timeIn,r.timeOut),r.notes]);
- });
- const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\n");
- download(csv,"attendance.csv","text/csv");
+function updateEntryDate(){
+
+const y=Number(document.getElementById("entryYear").value);
+const m=Number(document.getElementById("entryMonth").value);
+
+const old=document.getElementById("entryDate").value;
+const oldDay=old?Number(old.split("-")[2]):1;
+
+const day=Math.min(oldDay,monthDays(y,m));
+
+document.getElementById("entryDate").value=dateKey(y,m,day);
+
+checkOffDay();
+
 }
 
-function download(content,name,type){
- const blob=new Blob([content],{type});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download=name;a.click();
- setTimeout(()=>URL.revokeObjectURL(url),1000);
+function checkOffDay(){
+
+const key=document.getElementById("entryDate").value;
+if(!key)return;
+
+const off=isWeeklyOff(key);
+
+document.getElementById("offDayMessage").textContent=off?
+"This date is a FIXED WEEKLY OFF. If you work on this day, select PRESENT to earn a comp-off.":
+"This is a regular working day.";
+
+if(!editingDate){
+document.getElementById("entryStatus").value=off?"WOFF":"Present";
 }
 
-async function clearDate(){
- if(!confirm("Clear attendance for this date?"))return;
- await remove(selected);
- delete records[selected];
- $("message").textContent="Date cleared.";
- selectDate(selected);
+checkStatus();
+
 }
 
-async function init(){
- try{
-  db=await openDB();
-  const all=await getAll();
-  all.forEach(r=>{
-   if(r.date>=START&&r.date<=END)records[r.date]=r;
-  });
+function checkStatus(){
 
-  $("prev").onclick=()=>{
-   const d=new Date(month.getFullYear(),month.getMonth()-1,1);
-   if(key(d)>=START){month=d;render();}
-  };
+const status=document.getElementById("entryStatus").value;
 
-  $("next").onclick=()=>{
-   const d=new Date(month.getFullYear(),month.getMonth()+1,1);
-   if(key(d)<=END){month=d;render();}
-  };
+document.getElementById("compOffBox").classList.toggle(
+"hidden",status!=="Comp-off"
+);
 
-  $("save").onclick=save;
-  $("clear").onclick=clearDate;
-  $("export").onclick=backup;
-  $("csv").onclick=exportCSV;
+if(status==="Comp-off")fillCompOffSources();
 
-  ["status","timeIn","timeOut","notes"].forEach(id=>{
-   $(id).addEventListener("input",()=>{
-    calculate();
-    autoSave();
-   });
-   $(id).addEventListener("change",autoSave);
-  });
-
-  render();
-  selectDate(selected);
- }catch(error){
-  console.error(error);
-  alert("Browser storage is unavailable. Please open this file in an updated Chrome or Edge browser.");
- }
 }
 
-init();
-</script>
-</body>
-  </html>
+// =============================
+// COMP-OFF SYSTEM
+// =============================
 
+function isSourceUsed(source,target){
+
+return Object.entries(attendance).some(([key,record])=>
+key!==target&&record.status==="Comp-off"&&record.source===source
+);
+
+}
+
+function fillCompOffSources(){
+
+const target=document.getElementById("entryDate").value;
+const select=document.getElementById("compOffSource");
+const old=select.value;
+
+select.innerHTML='<option value="">Select source date</option>';
+
+Object.keys(attendance).sort().forEach(key=>{
+
+const record=attendance[key];
+
+if(key===target)return;
+if(!record||record.status!=="Present")return;
+if(!isWeeklyOff(key))return;
+if(isSourceUsed(key,target))return;
+
+const option=document.createElement("option");
+option.value=key;
+option.textContent=key+" ("+dayName(key)+")";
+
+select.appendChild(option);
+
+});
+
+if([...select.options].some(o=>o.value===old)){
+select.value=old;
+}
+
+}
+
+function compOffSummary(year){
+
+let earned=0;
+let used=0;
+
+Object.entries(attendance).forEach(([key,r])=>{
+
+const y=Number(key.slice(0,4));
+
+if(y!==year)return;
+
+if(r.status==="Present"&&isWeeklyOff(key))earned++;
+if(r.status==="Comp-off")used++;
+
+});
+
+return {earned,used,balance:earned-used};
+
+}
+
+// =============================
+// PAID LEAVE SYSTEM
+// =============================
+
+// Two paid leaves credited every month.
+// Unused leaves carry forward within the same calendar year.
+// Paid Leave consumes 1 day.
+// Half-day consumes 0.5 day from paid leave balance.
+
+function leaveUsage(year,month){
+
+let used=0;
+
+Object.entries(attendance).forEach(([key,r])=>{
+
+const [y,m]=key.split("-").map(Number);
+
+if(y!==year||m>month+1)return;
+
+if(r.status==="Paid Leave")used+=1;
+if(r.status==="Half-day")used+=0.5;
+
+});
+
+return used;
+
+}
+
+function leaveBalance(year,month){
+
+const credited=(month+1)*2;
+const used=leaveUsage(year,month);
+
+return {
+credited,
+used,
+balance:credited-used
+};
+
+}
+
+// =============================
+// SAVE ATTENDANCE
+// =============================
+
+function saveAttendance(){
+
+const key=document.getElementById("entryDate").value;
+const status=document.getElementById("entryStatus").value;
+
+if(!key){
+alert("Please select a date.");
+return;
+}
+
+const y=Number(key.slice(0,4));
+const m=Number(key.slice(5,7))-1;
+const d=Number(key.slice(8,10));
+
+if(!y||m<0||m>11||d<1||d>monthDays(y,m)){
+alert("Invalid date.");
+return;
+}
+
+let source=null;
+
+if(status==="Comp-off"){
+
+source=document.getElementById("compOffSource").value;
+
+if(!source){
+alert("Please select the previous weekly-off working date.");
+return;
+}
+
+if(!attendance[source]||
+attendance[source].status!=="Present"||
+!isWeeklyOff(source)){
+alert("The source must be a weekly off marked Present.");
+return;
+}
+
+if(isSourceUsed(source,key)){
+alert("This weekly-off date has already been used.");
+return;
+}
+
+}
+
+// Check paid leave balance, excluding the date being edited.
+if(status==="Paid Leave"||status==="Half-day"){
+
+const old=attendance[key];
+
+const oldUsage=old?
+(old.status==="Paid Leave"?1:
+old.status==="Half-day"?0.5:0):0;
+
+const available=leaveBalance(y,m).balance+oldUsage;
+const required=status==="Paid Leave"?1:0.5;
+
+if(available<required){
+alert("Insufficient paid leave balance. Your available balance is "+available+" days. You can select LWP if applicable.");
+return;
+}
+
+}
+
+attendance[key]={
+status:status,
+source:source,
+updatedAt:new Date().toISOString()
+};
+
+saveData();
+closeEntry();
+
+renderDashboard();
+renderMonthlyReport();
+renderYearlyReport();
+
+alert("Attendance saved successfully!");
+
+}
+
+// =============================
+// DELETE ATTENDANCE
+// =============================
+
+function deleteAttendance(key){
+
+if(!confirm("Delete attendance for "+key+"?"))return;
+
+delete attendance[key];
+
+saveData();
+
+renderDashboard();
+renderMonthlyReport();
+renderYearlyReport();
+
+}
+
+// =============================
+// MONTHLY RECORDS AND SUMMARY
+// =============================
+
+function getMonthRecords(y,m){
+
+const result=[];
+
+for(let d=1;d<=monthDays(y,m);d++){
+
+const key=dateKey(y,m,d);
+
+result.push({
+key:key,
+day:dayName(key),
+status:getStatus(key),
+record:getRecord(key)
+});
+
+}
+
+return result;
+
+}
+
+function summary(y,m){
+
+const records=getMonthRecords(y,m);
+const counts={};
+
+STATUSES.forEach(s=>counts[s]=0);
+counts.Pending=0;
+
+records.forEach(r=>counts[r.status]++);
+
+return {
+records,
+counts,
+presentEquivalent:counts.Present+counts.WFH+counts["Half-day"]*0.5,
+total:records.length
+};
+
+}
+
+// =============================
+// COMMON DISPLAY HELPERS
+// =============================
+
+function badge(status){
+
+const cls=status.replaceAll(" ","-");
+
+return `<span class="badge ${cls}">${status}</span>`;
+
+}
+
+function card(title,value){
+
+return `
+<div class="card">
+<small>${title}</small>
+<strong>${value}</strong>
+</div>`;
+
+}
+
+function compSource(record){
+
+return record&&record.source?record.source:"-";
+
+}
+
+// =============================
+// DASHBOARD
+// =============================
+
+function renderDashboard(){
+
+const m=Number(document.getElementById("dashMonth").value);
+const y=Number(document.getElementById("dashYear").value);
+
+const s=summary(y,m);
+const c=s.counts;
+const leave=leaveBalance(y,m);
+
+document.getElementById("dashboardCards").innerHTML=
+card("Present / WFH",c.Present+c.WFH)+
+card("Absent",c.Absent)+
+card("Half Day",c["Half-day"])+
+card("Paid Leave Used",c["Paid Leave"])+
+card("Comp-off Used",c["Comp-off"])+
+card("Weekly Off",c.WOFF)+
+card("LWP",c.LWP)+
+card("Pending Paid Leave",leave.balance);
+
+let html="";
+
+s.records.forEach(r=>{
+
+html+=`
+<tr>
+<td>${r.key}</td>
+<td>${r.day}</td>
+<td>${badge(r.status)}</td>
+<td>${compSource(r.record)}</td>
+<td>
+<button class="small-btn" onclick="openEntry('${r.key}')">Edit</button>
+${r.record?`<button class="small-btn red" onclick="deleteAttendance('${r.key}')">Delete</button>`:""}
+</td>
+</tr>`;
+
+});
+
+document.getElementById("dailyTable").innerHTML=html;
+
+}
+
+// =============================
+// MONTHLY REPORT
+// =============================
+
+function renderMonthlyReport(){
+
+const m=Number(document.getElementById("reportMonth").value);
+const y=Number(document.getElementById("reportYear").value);
+
+const s=summary(y,m);
+const c=s.counts;
+const leave=leaveBalance(y,m);
+const comp=compOffSummary(y);
+
+document.getElementById("monthlyCards").innerHTML=
+card("Present",c.Present)+
+card("Absent",c.Absent)+
+card("Half Day",c["Half-day"])+
+card("Comp-off",c["Comp-off"])+
+card("Weekly Off",c.WOFF)+
+card("WFH",c.WFH)+
+card("Paid Holiday",c["Paid Holiday"])+
+card("Paid Leave",c["Paid Leave"])+
+card("LWP",c.LWP)+
+card("Pending Dates",c.Pending);
+
+document.getElementById("leaveBalance").innerHTML=`
+<div class="cards">
+${card("Leaves Credited",leave.credited)}
+${card("Leaves Used",leave.used)}
+${card("Remaining Balance",leave.balance)}
+</div>
+<p>Two paid leaves are credited every month. Unused leave carries forward within the selected calendar year. Half-day consumes 0.5 leave.</p>
+`;
+
+document.getElementById("compBalance").innerHTML=`
+<div class="cards">
+${card("Comp-off Earned This Year",comp.earned)}
+${card("Comp-off Used This Year",comp.used)}
+${card("Comp-off Balance",comp.balance)}
+</div>
+`;
+
+let html="";
+
+s.records.forEach(r=>{
+
+html+=`
+<tr>
+<td>${r.key}</td>
+<td>${r.day}</td>
+<td>${badge(r.status)}</td>
+<td>${compSource(r.record)}</td>
+</tr>`;
+
+});
+
+document.getElementById("monthlyTable").innerHTML=html;
+
+}
+
+// =============================
+// YEARLY REPORT
+// =============================
+
+function renderYearlyReport(){
+
+const y=Number(document.getElementById("yearlyYear").value);
+
+let totals={};
+STATUSES.forEach(s=>totals[s]=0);
+totals.Pending=0;
+
+let table="";
+
+for(let m=0;m<12;m++){
+
+const s=summary(y
